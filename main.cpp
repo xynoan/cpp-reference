@@ -13,18 +13,16 @@ struct Account {
   string last_name = "";
   string password = "";
   string email = "";
+  bool equals(Account to_compare) { return email == to_compare.email; }
 };
 
 vector<Account> read_accounts_from_file() {
-  string first_name;
-  string last_name;
-  string password;
-  string email;
   vector<Account> accounts;
-  ifstream input_file("accounts.txt");
+  Account account;
+  ifstream input_file(accounts_file);
   if (input_file) {
-    while (input_file >> first_name >> last_name >> password >> email) {
-      Account account = {first_name, last_name, password, email};
+    while (input_file >> account.first_name >> account.last_name >>
+           account.password >> account.email) {
       accounts.push_back(account);
     }
     input_file.close();
@@ -40,11 +38,10 @@ void display_accounts(vector<Account> accounts) {
     cout << setw(col_width * 3) << account.first_name + ' ' + account.last_name
          << setw(col_width * 4) << account.email << endl;
   }
-  cout << '\n';
 }
 
 void write_accounts_to_file(vector<Account> accounts) {
-  ofstream output_file(accounts_file, ios::app);
+  ofstream output_file(accounts_file);
   if (output_file) {
     for (Account account : accounts) {
       output_file << account.first_name << '\t' << account.last_name << '\t'
@@ -54,42 +51,47 @@ void write_accounts_to_file(vector<Account> accounts) {
   }
 }
 
-void get_account() { Account account; }
+Account get_account() {
+  Account account;
+  cout << "First name: ";
+  getline(cin, account.first_name);
+  cout << "Last name: ";
+  getline(cin, account.last_name);
+  cout << "Password: ";
+  getline(cin, account.password);
+  cout << "Email: ";
+  getline(cin, account.email);
 
-void write_account_to_file(const string first, const string last,
-                           const string password, const string email) {
-  ofstream output_file(accounts_file, ios::app);
-  if (output_file) {
-    output_file << first << '\t' << last << '\t' << password << '\t' << email
-                << '\n';
-    output_file.close();
-  }
+  return account;
 }
 
 int main() {
+  vector<Account> accounts = read_accounts_from_file();
   cout << "Create Account List\n\n";
 
-  string first_name;
-  string last_name;
-  string password;
-  string email;
-
-  display_accounts(read_accounts_from_file());
+  display_accounts(accounts);
 
   char another = 'y';
   while (tolower(another) == 'y') {
-    cout << "First name: ";
-    getline(cin, first_name);
-    cout << "Last name: ";
-    getline(cin, last_name);
-    cout << "Password: ";
-    getline(cin, password);
-    cout << "Email: ";
-    getline(cin, email);
+    Account account = get_account();
+    bool alreadyExist = false;
+    for (Account existingAccs : accounts) {
+      if (existingAccs.equals(account)) {
+        cout << "\nThat account already exist!\n";
+        alreadyExist = true;
+        break;
+      }
+    }
 
-    write_account_to_file(first_name, last_name, password, email);
+    if (alreadyExist) {
+      continue;
+    }
+
+    accounts.push_back(account);
+    write_accounts_to_file(accounts);
     cout << endl
-         << email << " was added for " << first_name + ' ' + last_name << endl
+         << account.email << " was added for "
+         << account.first_name + ' ' + account.last_name << endl
          << endl;
 
     cout << "Enter another account? (y/n): ";
@@ -98,5 +100,5 @@ int main() {
     cout << endl;
   }
 
-  display_accounts(read_accounts_from_file());
+  display_accounts(accounts);
 }

@@ -1,7 +1,6 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
-#include <string>
 #include <vector>
 
 std::string accounts_file = "accounts.txt";
